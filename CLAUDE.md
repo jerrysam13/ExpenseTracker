@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git workflow
+
+After every meaningful piece of work, commit and push to GitHub:
+
+```bash
+git add <changed files>
+git commit -m "short description of what changed and why"
+git push
+```
+
+Commit at logical checkpoints — after adding a feature, fixing a bug, or making a notable change. Never leave completed work uncommitted. Commit messages should be lowercase, imperative, and specific (e.g. `add CSV export button`, not `update stuff`).
+
 ## Running the app
 
 Open `index.html` directly in a browser — no build step, no server, no dependencies. Double-click the file in Finder or drag it into a browser window.
