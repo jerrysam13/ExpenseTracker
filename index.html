@@ -185,6 +185,46 @@
       font-size: 0.95rem;
     }
 
+    /* ── Breakdown rows (shared by category + monthly cards) ── */
+    .breakdown-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0;
+    }
+
+    .breakdown-label {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
+    .breakdown-amount {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f3460;
+      white-space: nowrap;
+    }
+
+    .breakdown-pct {
+      font-size: 0.78rem;
+      color: #aaa;
+      width: 3rem;
+      text-align: right;
+    }
+
+    .bar-track {
+      height: 4px;
+      background: #eee;
+      border-radius: 2px;
+      margin-bottom: 0.5rem;
+    }
+
+    .bar-fill {
+      height: 4px;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
     /* ── Error message ── */
     .error-msg {
       color: #e74c3c;
@@ -206,6 +246,18 @@
       <div class="total-amount">
         $<span id="total">0.00</span>
       </div>
+    </div>
+
+    <!-- Spending by category -->
+    <div class="card">
+      <h2>By Category</h2>
+      <div id="category-breakdown"></div>
+    </div>
+
+    <!-- Monthly summary -->
+    <div class="card">
+      <h2>Monthly Summary</h2>
+      <div id="monthly-summary"></div>
     </div>
 
     <!-- Add expense form -->
@@ -352,20 +404,83 @@
       // Build the HTML for each expense item
       if (visible.length === 0) {
         list.innerHTML = '<p class="empty-state">No expenses in this category.</p>';
+      } else {
+        list.innerHTML = visible.map(e => `
+          <div class="expense-item">
+            <div class="category-dot" style="background:${categoryColors[e.category] || '#ccc'}"></div>
+            <div class="expense-info">
+              <div class="expense-name">${escapeHtml(e.name)}</div>
+              <div class="expense-meta">${e.category} · ${formatDate(e.date)}${e.notes ? ' · ' + escapeHtml(e.notes) : ''}</div>
+            </div>
+            <div class="expense-amount">$${e.amount.toFixed(2)}</div>
+            <button class="delete-btn" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
+          </div>
+        `).join('');
+      }
+
+      renderCategoryBreakdown();
+      renderMonthlyBreakdown();
+    }
+
+    // ── Category breakdown ────────────────────────────────────────────────────
+    function renderCategoryBreakdown() {
+      const el = document.getElementById('category-breakdown');
+      if (expenses.length === 0) {
+        el.innerHTML = '<p class="empty-state">No expenses yet.</p>';
         return;
       }
 
-      list.innerHTML = visible.map(e => `
-        <div class="expense-item">
-          <div class="category-dot" style="background:${categoryColors[e.category] || '#ccc'}"></div>
-          <div class="expense-info">
-            <div class="expense-name">${escapeHtml(e.name)}</div>
-            <div class="expense-meta">${e.category} · ${formatDate(e.date)}${e.notes ? ' · ' + escapeHtml(e.notes) : ''}</div>
+      const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+      const totals = {};
+      expenses.forEach(e => {
+        totals[e.category] = (totals[e.category] || 0) + e.amount;
+      });
+
+      const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+
+      el.innerHTML = sorted.map(([cat, amt]) => {
+        const pct = total > 0 ? (amt / total * 100).toFixed(0) : 0;
+        const color = categoryColors[cat] || '#ccc';
+        return `
+          <div class="breakdown-row">
+            <div class="category-dot" style="background:${color}"></div>
+            <span class="breakdown-label">${cat}</span>
+            <span class="breakdown-amount">$${amt.toFixed(2)}</span>
+            <span class="breakdown-pct">${pct}%</span>
           </div>
-          <div class="expense-amount">$${e.amount.toFixed(2)}</div>
-          <button class="delete-btn" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
-        </div>
-      `).join('');
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Monthly breakdown ─────────────────────────────────────────────────────
+    function renderMonthlyBreakdown() {
+      const el = document.getElementById('monthly-summary');
+      if (expenses.length === 0) {
+        el.innerHTML = '<p class="empty-state">No expenses yet.</p>';
+        return;
+      }
+
+      const totals = {};
+      expenses.forEach(e => {
+        const key = e.date.slice(0, 7); // "2026-03"
+        totals[key] = (totals[key] || 0) + e.amount;
+      });
+
+      const sorted = Object.entries(totals).sort((a, b) => b[0].localeCompare(a[0]));
+
+      el.innerHTML = sorted.map(([key, amt]) => {
+        const [y, m] = key.split('-');
+        const label = new Date(Number(y), Number(m) - 1, 1)
+          .toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+        return `
+          <div class="breakdown-row">
+            <span class="breakdown-label">${label}</span>
+            <span class="breakdown-amount">$${amt.toFixed(2)}</span>
+          </div>`;
+      }).join('');
     }
 
     // ── Date formatter ────────────────────────────────────────────────────────
