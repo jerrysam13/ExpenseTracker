@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker</title>
+  <style>
+    /* ── Reset & base ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: #16213e;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Total banner ── */
+    .total-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0f3460;
+    }
+
+    .total-amount span {
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: #888;
+    }
+
+    /* ── Form ── */
+    .form-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .form-row input,
+    .form-row select {
+      flex: 1;
+      min-width: 120px;
+      padding: 0.6rem 0.75rem;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-row input:focus,
+    .form-row select:focus {
+      border-color: #0f3460;
+    }
+
+    button.add-btn {
+      width: 100%;
+      margin-top: 0.75rem;
+      padding: 0.7rem;
+      background: #0f3460;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.add-btn:hover { background: #16213e; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar button {
+      padding: 0.35rem 0.9rem;
+      border: 1.5px solid #ddd;
+      background: white;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-bar button.active {
+      background: #0f3460;
+      color: white;
+      border-color: #0f3460;
+    }
+
+    /* ── Expense list ── */
+    #expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .expense-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0.9rem;
+      background: #f8f9fc;
+      border-radius: 8px;
+    }
+
+    .category-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .expense-info { flex: 1; }
+
+    .expense-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .expense-meta {
+      font-size: 0.78rem;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .expense-amount {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0f3460;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.2rem;
+      transition: color 0.2s;
+    }
+
+    .delete-btn:hover { color: #e74c3c; }
+
+    .empty-state {
+      text-align: center;
+      color: #bbb;
+      padding: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    /* ── Error message ── */
+    .error-msg {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Expense Tracker</h1>
+
+  <div class="container">
+
+    <!-- Total spending card -->
+    <div class="card">
+      <h2>Total Spent</h2>
+      <div class="total-amount">
+        $<span id="total">0.00</span>
+      </div>
+    </div>
+
+    <!-- Add expense form -->
+    <div class="card">
+      <h2>Add Expense</h2>
+      <div class="form-row">
+        <input type="text" id="expense-name" placeholder="Description (e.g. Coffee)" />
+        <input type="number" id="expense-amount" placeholder="Amount" min="0" step="0.01" />
+        <select id="expense-category">
+          <option value="Food">Food</option>
+          <option value="Transport">Transport</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Health">Health</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <p class="error-msg" id="error-msg">Please enter a description and a valid amount.</p>
+      <button class="add-btn" onclick="addExpense()">+ Add Expense</button>
+    </div>
+
+    <!-- Filter + list -->
+    <div class="card">
+      <h2>Expenses</h2>
+      <div class="filter-bar" id="filter-bar">
+        <button class="active" onclick="setFilter('All', this)">All</button>
+        <button onclick="setFilter('Food', this)">Food</button>
+        <button onclick="setFilter('Transport', this)">Transport</button>
+        <button onclick="setFilter('Shopping', this)">Shopping</button>
+        <button onclick="setFilter('Entertainment', this)">Entertainment</button>
+        <button onclick="setFilter('Health', this)">Health</button>
+        <button onclick="setFilter('Other', this)">Other</button>
+      </div>
+      <br />
+      <div id="expense-list">
+        <p class="empty-state">No expenses yet. Add one above!</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Data ──────────────────────────────────────────────────────────────────
+    // We load saved expenses from localStorage (so data survives page refreshes),
+    // or start with an empty array if nothing is saved yet.
+    let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+    let currentFilter = 'All';
+
+    // A colour for each category dot
+    const categoryColors = {
+      Food:          '#e67e22',
+      Transport:     '#3498db',
+      Shopping:      '#9b59b6',
+      Entertainment: '#e91e8c',
+      Health:        '#27ae60',
+      Other:         '#95a5a6',
+    };
+
+    // ── Save helper ───────────────────────────────────────────────────────────
+    function save() {
+      // Whenever expenses change, write them to localStorage so they persist.
+      localStorage.setItem('expenses', JSON.stringify(expenses));
+    }
+
+    // ── Add expense ───────────────────────────────────────────────────────────
+    function addExpense() {
+      const nameInput   = document.getElementById('expense-name');
+      const amountInput = document.getElementById('expense-amount');
+      const category    = document.getElementById('expense-category').value;
+      const errorMsg    = document.getElementById('error-msg');
+
+      const name   = nameInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+
+      // Validate: name must not be empty, amount must be a positive number
+      if (!name || isNaN(amount) || amount <= 0) {
+        errorMsg.style.display = 'block';
+        return;
+      }
+      errorMsg.style.display = 'none';
+
+      // Build a new expense object and add it to the front of the list
+      const expense = {
+        id:       Date.now(),          // unique ID based on current time
+        name,
+        amount,
+        category,
+        date:     new Date().toLocaleDateString(),
+      };
+
+      expenses.unshift(expense);       // unshift = add to beginning of array
+      save();
+      render();
+
+      // Clear the inputs ready for the next entry
+      nameInput.value   = '';
+      amountInput.value = '';
+      nameInput.focus();
+    }
+
+    // ── Delete expense ────────────────────────────────────────────────────────
+    function deleteExpense(id) {
+      // Keep every expense whose id does NOT match the one we want to delete
+      expenses = expenses.filter(e => e.id !== id);
+      save();
+      render();
+    }
+
+    // ── Filter ────────────────────────────────────────────────────────────────
+    function setFilter(category, btn) {
+      currentFilter = category;
+
+      // Update which button looks "active"
+      document.querySelectorAll('#filter-bar button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      render();
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    // This function redraws the expense list and total every time data changes.
+    function render() {
+      const list = document.getElementById('expense-list');
+
+      // Filter the list if a category is selected
+      const visible = currentFilter === 'All'
+        ? expenses
+        : expenses.filter(e => e.category === currentFilter);
+
+      // Update the total (always based on ALL expenses, not just the visible ones)
+      const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+      document.getElementById('total').textContent = total.toFixed(2);
+
+      // Build the HTML for each expense item
+      if (visible.length === 0) {
+        list.innerHTML = '<p class="empty-state">No expenses in this category.</p>';
+        return;
+      }
+
+      list.innerHTML = visible.map(e => `
+        <div class="expense-item">
+          <div class="category-dot" style="background:${categoryColors[e.category] || '#ccc'}"></div>
+          <div class="expense-info">
+            <div class="expense-name">${escapeHtml(e.name)}</div>
+            <div class="expense-meta">${e.category} · ${e.date}</div>
+          </div>
+          <div class="expense-amount">$${e.amount.toFixed(2)}</div>
+          <button class="delete-btn" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
+        </div>
+      `).join('');
+    }
+
+    // ── Safety helper ─────────────────────────────────────────────────────────
+    // Prevent XSS: escape any HTML characters in user-typed text before
+    // inserting it into the page.
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ── Allow pressing Enter to add an expense ────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') addExpense();
+    });
+
+    // ── Initial render on page load ───────────────────────────────────────────
+    render();
+  </script>
+
+</body>
+</html>
