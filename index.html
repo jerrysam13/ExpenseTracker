@@ -225,6 +225,29 @@
       transition: width 0.3s;
     }
 
+    /* ── Card header (title + action button on same row) ── */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-header h2 { margin-bottom: 0; }
+
+    .export-btn {
+      padding: 0.3rem 0.75rem;
+      border: 1.5px solid #0f3460;
+      background: white;
+      color: #0f3460;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .export-btn:hover { background: #0f3460; color: white; }
+
     /* ── Error message ── */
     .error-msg {
       color: #e74c3c;
@@ -285,7 +308,10 @@
 
     <!-- Filter + list -->
     <div class="card">
-      <h2>Expenses</h2>
+      <div class="card-header">
+        <h2>Expenses</h2>
+        <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+      </div>
       <div class="filter-bar" id="filter-bar">
         <button class="active" onclick="setFilter('All', this)">All</button>
         <button onclick="setFilter('Food', this)">Food</button>
@@ -481,6 +507,25 @@
             <span class="breakdown-amount">$${amt.toFixed(2)}</span>
           </div>`;
       }).join('');
+    }
+
+    // ── CSV export ────────────────────────────────────────────────────────────
+    function exportCSV() {
+      if (expenses.length === 0) return;
+
+      const escape = v => `"${String(v).replace(/"/g, '""')}"`;
+      const header = ['Date', 'Description', 'Category', 'Amount', 'Notes'].map(escape);
+      const rows = expenses.map(e => [
+        e.date, e.name, e.category, e.amount.toFixed(2), e.notes || ''
+      ].map(escape));
+
+      const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+      const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+        download: 'expenses.csv',
+      });
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
 
     // ── Date formatter ────────────────────────────────────────────────────────
