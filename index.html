@@ -223,7 +223,11 @@
           <option value="Other">Other</option>
         </select>
       </div>
-      <p class="error-msg" id="error-msg">Please enter a description and a valid amount.</p>
+      <div class="form-row">
+        <input type="date" id="expense-date" />
+        <input type="text" id="expense-notes" placeholder="Notes (optional)" />
+      </div>
+      <p class="error-msg" id="error-msg">Please enter a description, a valid amount, and a date.</p>
       <button class="add-btn" onclick="addExpense()">+ Add Expense</button>
     </div>
 
@@ -274,14 +278,18 @@
     function addExpense() {
       const nameInput   = document.getElementById('expense-name');
       const amountInput = document.getElementById('expense-amount');
+      const dateInput   = document.getElementById('expense-date');
+      const notesInput  = document.getElementById('expense-notes');
       const category    = document.getElementById('expense-category').value;
       const errorMsg    = document.getElementById('error-msg');
 
       const name   = nameInput.value.trim();
       const amount = parseFloat(amountInput.value);
+      const date   = dateInput.value;
+      const notes  = notesInput.value.trim();
 
-      // Validate: name must not be empty, amount must be a positive number
-      if (!name || isNaN(amount) || amount <= 0) {
+      // Validate: name must not be empty, amount must be a positive number, date required
+      if (!name || isNaN(amount) || amount <= 0 || !date) {
         errorMsg.style.display = 'block';
         return;
       }
@@ -289,11 +297,12 @@
 
       // Build a new expense object and add it to the front of the list
       const expense = {
-        id:       Date.now(),          // unique ID based on current time
+        id: Date.now(),          // unique ID based on current time
         name,
         amount,
         category,
-        date:     new Date().toLocaleDateString(),
+        date,
+        notes,
       };
 
       expenses.unshift(expense);       // unshift = add to beginning of array
@@ -303,6 +312,7 @@
       // Clear the inputs ready for the next entry
       nameInput.value   = '';
       amountInput.value = '';
+      notesInput.value  = '';
       nameInput.focus();
     }
 
@@ -350,12 +360,18 @@
           <div class="category-dot" style="background:${categoryColors[e.category] || '#ccc'}"></div>
           <div class="expense-info">
             <div class="expense-name">${escapeHtml(e.name)}</div>
-            <div class="expense-meta">${e.category} · ${e.date}</div>
+            <div class="expense-meta">${e.category} · ${formatDate(e.date)}${e.notes ? ' · ' + escapeHtml(e.notes) : ''}</div>
           </div>
           <div class="expense-amount">$${e.amount.toFixed(2)}</div>
           <button class="delete-btn" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
         </div>
       `).join('');
+    }
+
+    // ── Date formatter ────────────────────────────────────────────────────────
+    function formatDate(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString();
     }
 
     // ── Safety helper ─────────────────────────────────────────────────────────
@@ -376,6 +392,7 @@
 
     // ── Initial render on page load ───────────────────────────────────────────
     render();
+    document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
   </script>
 
 </body>
