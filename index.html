@@ -19,8 +19,31 @@
     h1 {
       text-align: center;
       font-size: 1.8rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
       color: #16213e;
+    }
+
+    /* ── App header (h1 + dark toggle) ── */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .dark-toggle {
+      position: absolute;
+      right: 0;
+      padding: 0.3rem 0.85rem;
+      border: 1.5px solid #888;
+      background: transparent;
+      color: inherit;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
     /* ── Layout ── */
@@ -61,6 +84,37 @@
       color: #888;
     }
 
+    /* ── Budget ── */
+    .budget-input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .budget-input-row span {
+      font-size: 0.85rem;
+      color: #888;
+      white-space: nowrap;
+    }
+
+    .budget-input-row input {
+      flex: 1;
+      padding: 0.4rem 0.6rem;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .budget-input-row input:focus { border-color: #0f3460; }
+
+    .budget-status {
+      font-size: 0.85rem;
+      margin: 0.4rem 0 0.3rem;
+    }
+
     /* ── Form ── */
     .form-row {
       display: flex;
@@ -99,6 +153,20 @@
     }
 
     button.add-btn:hover { background: #16213e; }
+
+    /* ── Search ── */
+    .search-input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: #0f3460; }
 
     /* ── Filter bar ── */
     .filter-bar {
@@ -178,6 +246,52 @@
 
     .delete-btn:hover { color: #e74c3c; }
 
+    /* ── Edit button ── */
+    .edit-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 1.05rem;
+      line-height: 1;
+      padding: 0 0.2rem;
+      transition: color 0.2s;
+    }
+
+    .edit-btn:hover { color: #0f3460; }
+
+    /* ── Inline edit form ── */
+    .edit-form {
+      width: 100%;
+      padding: 0.75rem;
+      background: #f8f9fc;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .edit-actions { display: flex; gap: 0.5rem; }
+
+    .edit-actions .add-btn {
+      margin-top: 0;
+      flex: 1;
+      padding: 0.5rem;
+    }
+
+    .cancel-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1.5px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cancel-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+
     .empty-state {
       text-align: center;
       color: #bbb;
@@ -255,11 +369,38 @@
       margin-top: 0.5rem;
       display: none;
     }
+
+    /* ── Dark mode ── */
+    body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+    body.dark-mode .card { background: #16213e; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    body.dark-mode .card h2 { color: #666; }
+    body.dark-mode .total-amount { color: #a0c4ff; }
+    body.dark-mode .form-row input,
+    body.dark-mode .form-row select { background: #0f3460; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .filter-bar button { background: #16213e; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .filter-bar button.active { background: #a0c4ff; color: #16213e; border-color: #a0c4ff; }
+    body.dark-mode .expense-item { background: #0f3460; }
+    body.dark-mode .expense-meta { color: #7a8baa; }
+    body.dark-mode .expense-amount { color: #a0c4ff; }
+    body.dark-mode .breakdown-amount { color: #a0c4ff; }
+    body.dark-mode .bar-track { background: #2a4a8a; }
+    body.dark-mode .export-btn { border-color: #a0c4ff; color: #a0c4ff; }
+    body.dark-mode .export-btn:hover { background: #a0c4ff; color: #16213e; }
+    body.dark-mode .dark-toggle { border-color: #a0c4ff; color: #a0c4ff; }
+    body.dark-mode .search-input { background: #0f3460; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .edit-form { background: #0f3460; }
+    body.dark-mode .edit-form input,
+    body.dark-mode .edit-form select { background: #16213e; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .cancel-btn { background: #16213e; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .budget-input-row input { background: #0f3460; border-color: #2a4a8a; color: #e0e0e0; }
   </style>
 </head>
 <body>
 
-  <h1>Expense Tracker</h1>
+  <div class="app-header">
+    <h1>Expense Tracker</h1>
+    <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()">Dark</button>
+  </div>
 
   <div class="container">
 
@@ -269,6 +410,12 @@
       <div class="total-amount">
         $<span id="total">0.00</span>
       </div>
+      <div class="budget-input-row">
+        <span>Monthly budget</span>
+        <input type="number" id="budget-input" placeholder="0.00" min="0" step="0.01"
+               onchange="setMonthlyBudget(this.value)" />
+      </div>
+      <div id="budget-section"></div>
     </div>
 
     <!-- Spending by category -->
@@ -312,6 +459,8 @@
         <h2>Expenses</h2>
         <button class="export-btn" onclick="exportCSV()">Export CSV</button>
       </div>
+      <input class="search-input" type="text" placeholder="Search expenses..."
+             oninput="setSearch(this.value)" />
       <div class="filter-bar" id="filter-bar">
         <button class="active" onclick="setFilter('All', this)">All</button>
         <button onclick="setFilter('Food', this)">Food</button>
@@ -331,10 +480,12 @@
 
   <script>
     // ── Data ──────────────────────────────────────────────────────────────────
-    // We load saved expenses from localStorage (so data survives page refreshes),
-    // or start with an empty array if nothing is saved yet.
     let expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
     let currentFilter = 'All';
+    let searchQuery   = '';
+    let editingId     = null;
+    let monthlyBudget = parseFloat(localStorage.getItem('monthlyBudget') || '0');
+    let darkMode      = localStorage.getItem('darkMode') === 'true';
 
     // A colour for each category dot
     const categoryColors = {
@@ -348,7 +499,6 @@
 
     // ── Save helper ───────────────────────────────────────────────────────────
     function save() {
-      // Whenever expenses change, write them to localStorage so they persist.
       localStorage.setItem('expenses', JSON.stringify(expenses));
     }
 
@@ -366,16 +516,14 @@
       const date   = dateInput.value;
       const notes  = notesInput.value.trim();
 
-      // Validate: name must not be empty, amount must be a positive number, date required
       if (!name || isNaN(amount) || amount <= 0 || !date) {
         errorMsg.style.display = 'block';
         return;
       }
       errorMsg.style.display = 'none';
 
-      // Build a new expense object and add it to the front of the list
       const expense = {
-        id: Date.now(),          // unique ID based on current time
+        id: Date.now(),
         name,
         amount,
         category,
@@ -383,11 +531,10 @@
         notes,
       };
 
-      expenses.unshift(expense);       // unshift = add to beginning of array
+      expenses.unshift(expense);
       save();
       render();
 
-      // Clear the inputs ready for the next entry
       nameInput.value   = '';
       amountInput.value = '';
       notesInput.value  = '';
@@ -396,7 +543,6 @@
 
     // ── Delete expense ────────────────────────────────────────────────────────
     function deleteExpense(id) {
-      // Keep every expense whose id does NOT match the one we want to delete
       expenses = expenses.filter(e => e.id !== id);
       save();
       render();
@@ -405,47 +551,146 @@
     // ── Filter ────────────────────────────────────────────────────────────────
     function setFilter(category, btn) {
       currentFilter = category;
-
-      // Update which button looks "active"
       document.querySelectorAll('#filter-bar button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       render();
     }
 
+    // ── Search ────────────────────────────────────────────────────────────────
+    function setSearch(value) {
+      searchQuery = value.trim().toLowerCase();
+      render();
+    }
+
+    // ── Inline edit ───────────────────────────────────────────────────────────
+    function startEdit(id) {
+      editingId = id;
+      render();
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      render();
+    }
+
+    function saveEdit(id) {
+      const name     = document.getElementById('edit-name').value.trim();
+      const amount   = parseFloat(document.getElementById('edit-amount').value);
+      const category = document.getElementById('edit-category').value;
+      const date     = document.getElementById('edit-date').value;
+      const notes    = document.getElementById('edit-notes').value.trim();
+      if (!name || isNaN(amount) || amount <= 0 || !date) return;
+      const idx = expenses.findIndex(e => e.id === id);
+      if (idx === -1) return;
+      expenses[idx] = { ...expenses[idx], name, amount, category, date, notes };
+      editingId = null;
+      save();
+      render();
+    }
+
+    // ── Dark mode ─────────────────────────────────────────────────────────────
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      localStorage.setItem('darkMode', darkMode);
+      document.body.classList.toggle('dark-mode', darkMode);
+      document.getElementById('dark-toggle').textContent = darkMode ? 'Light' : 'Dark';
+    }
+
+    // ── Monthly budget ────────────────────────────────────────────────────────
+    function setMonthlyBudget(value) {
+      const n = parseFloat(value);
+      monthlyBudget = (!value || isNaN(n) || n <= 0) ? 0 : n;
+      localStorage.setItem('monthlyBudget', monthlyBudget);
+      render();
+    }
+
+    function renderBudget() {
+      const inputEl = document.getElementById('budget-input');
+      if (inputEl && document.activeElement !== inputEl)
+        inputEl.value = monthlyBudget || '';
+
+      const el = document.getElementById('budget-section');
+      if (!monthlyBudget) { el.innerHTML = ''; return; }
+
+      const thisMonth = new Date().toISOString().slice(0, 7);
+      const spent = expenses
+        .filter(e => e.date.startsWith(thisMonth))
+        .reduce((sum, e) => sum + e.amount, 0);
+      const pct   = Math.min((spent / monthlyBudget) * 100, 100).toFixed(0);
+      const over  = spent > monthlyBudget;
+      const warn  = spent >= monthlyBudget * 0.8;
+      const color = over ? '#e74c3c' : warn ? '#e67e22' : '#27ae60';
+
+      el.innerHTML = `
+        <div class="budget-status" style="color:${color}">
+          This month: $${spent.toFixed(2)} of $${monthlyBudget.toFixed(2)}
+          ${over ? ' — Over budget!' : warn ? ' — Near limit' : ''}
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>`;
+    }
+
     // ── Render ────────────────────────────────────────────────────────────────
-    // This function redraws the expense list and total every time data changes.
     function render() {
       const list = document.getElementById('expense-list');
 
-      // Filter the list if a category is selected
-      const visible = currentFilter === 'All'
-        ? expenses
-        : expenses.filter(e => e.category === currentFilter);
+      // Apply category + search filters
+      const visible = expenses
+        .filter(e => currentFilter === 'All' || e.category === currentFilter)
+        .filter(e => !searchQuery ||
+          e.name.toLowerCase().includes(searchQuery) ||
+          (e.notes && e.notes.toLowerCase().includes(searchQuery)));
 
-      // Update the total (always based on ALL expenses, not just the visible ones)
+      // Update the total (always based on ALL expenses)
       const total = expenses.reduce((sum, e) => sum + e.amount, 0);
       document.getElementById('total').textContent = total.toFixed(2);
 
-      // Build the HTML for each expense item
       if (visible.length === 0) {
-        list.innerHTML = '<p class="empty-state">No expenses in this category.</p>';
+        list.innerHTML = `<p class="empty-state">${searchQuery ? 'No matching expenses.' : 'No expenses in this category.'}</p>`;
       } else {
-        list.innerHTML = visible.map(e => `
-          <div class="expense-item">
+        list.innerHTML = visible.map(e => {
+          // Edit mode: render inline form
+          if (e.id === editingId) {
+            return `<div class="expense-item" style="flex-direction:column;align-items:stretch">
+              <div class="edit-form">
+                <div class="form-row">
+                  <input type="text"   id="edit-name"     value="${escapeHtml(e.name)}" />
+                  <input type="number" id="edit-amount"   value="${e.amount}" min="0" step="0.01" />
+                  <select id="edit-category">
+                    ${Object.keys(categoryColors).map(c =>
+                      `<option${c === e.category ? ' selected' : ''}>${c}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="form-row">
+                  <input type="date" id="edit-date"  value="${e.date}" />
+                  <input type="text" id="edit-notes" value="${escapeHtml(e.notes || '')}" placeholder="Notes (optional)" />
+                </div>
+                <div class="edit-actions">
+                  <button class="add-btn" onclick="saveEdit(${e.id})">Save</button>
+                  <button class="cancel-btn" onclick="cancelEdit()">Cancel</button>
+                </div>
+              </div>
+            </div>`;
+          }
+
+          // Read mode: normal expense row
+          return `<div class="expense-item">
             <div class="category-dot" style="background:${categoryColors[e.category] || '#ccc'}"></div>
             <div class="expense-info">
               <div class="expense-name">${escapeHtml(e.name)}</div>
               <div class="expense-meta">${e.category} · ${formatDate(e.date)}${e.notes ? ' · ' + escapeHtml(e.notes) : ''}</div>
             </div>
             <div class="expense-amount">$${e.amount.toFixed(2)}</div>
+            <button class="edit-btn" onclick="startEdit(${e.id})" title="Edit">✎</button>
             <button class="delete-btn" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
       }
 
       renderCategoryBreakdown();
       renderMonthlyBreakdown();
+      renderBudget();
     }
 
     // ── Category breakdown ────────────────────────────────────────────────────
@@ -535,8 +780,6 @@
     }
 
     // ── Safety helper ─────────────────────────────────────────────────────────
-    // Prevent XSS: escape any HTML characters in user-typed text before
-    // inserting it into the page.
     function escapeHtml(text) {
       return text
         .replace(/&/g, '&amp;')
@@ -553,6 +796,12 @@
     // ── Initial render on page load ───────────────────────────────────────────
     render();
     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+
+    // Apply persisted dark mode
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+      document.getElementById('dark-toggle').textContent = 'Light';
+    }
   </script>
 
 </body>
