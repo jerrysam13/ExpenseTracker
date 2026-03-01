@@ -370,6 +370,80 @@
       display: none;
     }
 
+    /* ── Insights grid ── */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .insight-item {
+      background: #f8f9fc;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    .insight-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+
+    .insight-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f3460;
+    }
+
+    /* ── Sort select ── */
+    .sort-select {
+      padding: 0.3rem 0.5rem;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      background: white;
+      color: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .sort-select:focus { border-color: #0f3460; }
+
+    /* ── Confirm delete ── */
+    .expense-item.confirming { background: #fff0f0; }
+
+    .confirm-delete-msg {
+      font-size: 0.85rem;
+      color: #e74c3c;
+      white-space: nowrap;
+    }
+
+    .confirm-yes-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .confirm-yes-btn:hover { background: #c0392b; }
+
+    .confirm-no-btn {
+      background: none;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: #888;
+      transition: all 0.2s;
+    }
+    .confirm-no-btn:hover { border-color: #888; color: #333; }
+
     /* ── Dark mode ── */
     body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
     body.dark-mode .card { background: #16213e; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
@@ -393,6 +467,10 @@
     body.dark-mode .edit-form select { background: #16213e; border-color: #2a4a8a; color: #e0e0e0; }
     body.dark-mode .cancel-btn { background: #16213e; border-color: #2a4a8a; color: #e0e0e0; }
     body.dark-mode .budget-input-row input { background: #0f3460; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .insight-item { background: #0f3460; }
+    body.dark-mode .insight-value { color: #a0c4ff; }
+    body.dark-mode .sort-select { background: #0f3460; border-color: #2a4a8a; color: #e0e0e0; }
+    body.dark-mode .expense-item.confirming { background: #3d1515; }
   </style>
 </head>
 <body>
@@ -416,6 +494,12 @@
                onchange="setMonthlyBudget(this.value)" />
       </div>
       <div id="budget-section"></div>
+    </div>
+
+    <!-- Insights -->
+    <div class="card">
+      <h2>Insights</h2>
+      <div id="insights"></div>
     </div>
 
     <!-- Spending by category -->
@@ -457,7 +541,15 @@
     <div class="card">
       <div class="card-header">
         <h2>Expenses</h2>
-        <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <select class="sort-select" id="sort-select" onchange="setSort(this.value)">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="amount-high">$ High→Low</option>
+            <option value="amount-low">$ Low→High</option>
+          </select>
+          <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+        </div>
       </div>
       <input class="search-input" type="text" placeholder="Search expenses..."
              oninput="setSearch(this.value)" />
@@ -486,6 +578,8 @@
     let editingId     = null;
     let monthlyBudget = parseFloat(localStorage.getItem('monthlyBudget') || '0');
     let darkMode      = localStorage.getItem('darkMode') === 'true';
+    let sortOrder          = localStorage.getItem('sortOrder') || 'newest';
+    let confirmingDeleteId = null;
 
     // A colour for each category dot
     const categoryColors = {
@@ -564,6 +658,7 @@
 
     // ── Inline edit ───────────────────────────────────────────────────────────
     function startEdit(id) {
+      confirmingDeleteId = null;
       editingId = id;
       render();
     }
@@ -642,14 +737,22 @@
           e.name.toLowerCase().includes(searchQuery) ||
           (e.notes && e.notes.toLowerCase().includes(searchQuery)));
 
+      // Sort
+      const sorted = [...visible].sort((a, b) => {
+        if (sortOrder === 'oldest')      return a.date.localeCompare(b.date);
+        if (sortOrder === 'amount-high') return b.amount - a.amount;
+        if (sortOrder === 'amount-low')  return a.amount - b.amount;
+        return b.date.localeCompare(a.date); // 'newest' default
+      });
+
       // Update the total (always based on ALL expenses)
       const total = expenses.reduce((sum, e) => sum + e.amount, 0);
       document.getElementById('total').textContent = total.toFixed(2);
 
-      if (visible.length === 0) {
+      if (sorted.length === 0) {
         list.innerHTML = `<p class="empty-state">${searchQuery ? 'No matching expenses.' : 'No expenses in this category.'}</p>`;
       } else {
-        list.innerHTML = visible.map(e => {
+        list.innerHTML = sorted.map(e => {
           // Edit mode: render inline form
           if (e.id === editingId) {
             return `<div class="expense-item" style="flex-direction:column;align-items:stretch">
@@ -674,16 +777,22 @@
             </div>`;
           }
 
-          // Read mode: normal expense row
-          return `<div class="expense-item">
+          // Read mode: normal or confirming row
+          const isConfirming = e.id === confirmingDeleteId;
+          return `<div class="expense-item${isConfirming ? ' confirming' : ''}">
             <div class="category-dot" style="background:${categoryColors[e.category] || '#ccc'}"></div>
             <div class="expense-info">
               <div class="expense-name">${escapeHtml(e.name)}</div>
               <div class="expense-meta">${e.category} · ${formatDate(e.date)}${e.notes ? ' · ' + escapeHtml(e.notes) : ''}</div>
             </div>
             <div class="expense-amount">$${e.amount.toFixed(2)}</div>
-            <button class="edit-btn" onclick="startEdit(${e.id})" title="Edit">✎</button>
-            <button class="delete-btn" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
+            ${isConfirming
+              ? `<span class="confirm-delete-msg">Delete?</span>
+                 <button class="confirm-yes-btn" onclick="deleteExpense(${e.id})">Yes</button>
+                 <button class="confirm-no-btn"  onclick="cancelConfirmDelete()">No</button>`
+              : `<button class="edit-btn"   onclick="startEdit(${e.id})"          title="Edit">✎</button>
+                 <button class="delete-btn" onclick="startConfirmDelete(${e.id})" title="Delete">✕</button>`
+            }
           </div>`;
         }).join('');
       }
@@ -691,6 +800,7 @@
       renderCategoryBreakdown();
       renderMonthlyBreakdown();
       renderBudget();
+      renderInsights();
     }
 
     // ── Category breakdown ────────────────────────────────────────────────────
@@ -754,6 +864,66 @@
       }).join('');
     }
 
+    // ── Sort ──────────────────────────────────────────────────────────────────
+    function setSort(value) {
+      sortOrder = value;
+      localStorage.setItem('sortOrder', sortOrder);
+      render();
+    }
+
+    // ── Confirm delete ────────────────────────────────────────────────────────
+    function startConfirmDelete(id) {
+      confirmingDeleteId = id;
+      render();
+    }
+
+    function cancelConfirmDelete() {
+      confirmingDeleteId = null;
+      render();
+    }
+
+    // ── Insights ──────────────────────────────────────────────────────────────
+    function renderInsights() {
+      const el = document.getElementById('insights');
+      if (expenses.length === 0) {
+        el.innerHTML = '<p class="empty-state">No expenses yet.</p>';
+        return;
+      }
+
+      const thisMonth = new Date().toISOString().slice(0, 7);
+      const thisMonthExpenses = expenses.filter(e => e.date.startsWith(thisMonth));
+
+      const dayOfMonth = new Date().getDate();
+      const monthTotal = thisMonthExpenses.reduce((s, e) => s + e.amount, 0);
+      const dailyAvg   = monthTotal / dayOfMonth;
+
+      const biggest = expenses.reduce((max, e) => e.amount > max.amount ? e : max, expenses[0]);
+
+      const counts = {};
+      expenses.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
+      const topCat = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+
+      el.innerHTML = `
+        <div class="insights-grid">
+          <div class="insight-item">
+            <div class="insight-label">This month</div>
+            <div class="insight-value">${thisMonthExpenses.length} expenses</div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-label">Daily avg (this month)</div>
+            <div class="insight-value">$${dailyAvg.toFixed(2)}</div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-label">Biggest expense</div>
+            <div class="insight-value">$${biggest.amount.toFixed(2)}</div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-label">Top category</div>
+            <div class="insight-value">${topCat[0]}</div>
+          </div>
+        </div>`;
+    }
+
     // ── CSV export ────────────────────────────────────────────────────────────
     function exportCSV() {
       if (expenses.length === 0) return;
@@ -796,6 +966,10 @@
     // ── Initial render on page load ───────────────────────────────────────────
     render();
     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+
+    // Apply persisted sort
+    const sortEl = document.getElementById('sort-select');
+    if (sortEl) sortEl.value = sortOrder;
 
     // Apply persisted dark mode
     if (darkMode) {
